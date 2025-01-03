@@ -2,6 +2,7 @@ import js from '@eslint/js';
 import globals from 'globals';
 import reactHooks from 'eslint-plugin-react-hooks';
 import reactRefresh from 'eslint-plugin-react-refresh';
+import stylisticJs from '@stylistic/eslint-plugin-js';
 import tseslint from 'typescript-eslint';
 
 export default tseslint.config(
@@ -16,6 +17,7 @@ export default tseslint.config(
         plugins: {
             'react-hooks': reactHooks,
             'react-refresh': reactRefresh,
+            '@stylistic/js': stylisticJs
         },
         rules: {
             ...reactHooks.configs.recommended.rules,
@@ -23,8 +25,25 @@ export default tseslint.config(
                 'warn',
                 { allowConstantExport: true },
             ],
-            semi: 'error',
-            indent: ['error', 4, { SwitchCase: 1 }],
+            '@stylistic/js/array-bracket-spacing': ['error', 'never'],
+            '@stylistic/js/comma-dangle': ['error', 'always-multiline'],
+            '@stylistic/js/eol-last': 'error',
+            '@stylistic/js/indent': ['error', 4, { SwitchCase: 1 }],
+            '@stylistic/js/max-len': ['error', { 'code': 120 }],
+            '@stylistic/js/no-extra-semi': 'error',
+            '@stylistic/js/no-multi-spaces': 'error',
+            '@stylistic/js/no-multiple-empty-lines': ['error', { 'max': 1, 'maxEOF': 0, 'maxBOF': 0 }],
+            '@stylistic/js/no-trailing-spaces': 'error',
+            '@stylistic/js/object-curly-spacing': ['error', 'always'],
+            '@stylistic/js/one-var-declaration-per-line': ['error', 'always'],
+            '@stylistic/js/padded-blocks': ['error', 'never'],
+            '@stylistic/js/quotes': ['error', 'single'],
+            '@stylistic/js/semi': 'error',
+            '@stylistic/js/semi-spacing': 'error',
+            '@stylistic/js/semi-style': ['error', 'last'],
+            '@stylistic/js/space-before-blocks': 'error',
+            '@stylistic/js/space-in-parens': 'error',
+            'no-console': 'error',
         },
     }
 );
