@@ -1,5 +1,9 @@
-import { Suspense, use, useState } from 'react';
-import { createUser, deleteUser, fetchUsers, User } from '../../shared/api';
+import {
+    Suspense, use, useState, useTransition,
+} from 'react';
+import {
+    createUser, deleteUser, fetchUsers, User,
+} from '../../shared/api';
 
 const defaultUsersPromise = fetchUsers();
 
@@ -12,23 +16,28 @@ export function UsersPage() {
             <h1 className='text-3xl font-bold underline'>Users</h1>
             <AddUserForm refetchUsers={refetchUsers} />
             <Suspense fallback={<div>Loading...</div>}>
-                <UsersList usersPromise={usersPromise} />
+                <UsersList usersPromise={usersPromise} refetchUsers={refetchUsers} />
             </Suspense>
         </main>
     );
 }
 
-export function AddUserForm({ refetchUsers } : { refetchUsers: () => void}) {
+export function AddUserForm({ refetchUsers }: { refetchUsers: () => void }) {
     const [email, setEmail] = useState('');
+    const [isPending, startTransition] = useTransition();
 
-    const handleSubmit = async (event: React.FormEvent) => {
+    const handleSubmit = (event: React.FormEvent) => {
         event.preventDefault();
-        await createUser({
-            email,
-            id: crypto.randomUUID(),
+        startTransition(async () => {
+            await createUser({
+                email,
+                id: crypto.randomUUID(),
+            });
+            startTransition(() => {
+                refetchUsers();
+                setEmail('');
+            });
         });
-        refetchUsers();
-        setEmail('');
     };
 
     return (
@@ -39,10 +48,13 @@ export function AddUserForm({ refetchUsers } : { refetchUsers: () => void}) {
                     type='email'
                     value={email}
                     onChange={event => setEmail(event.target.value)}
+                    disabled={isPending}
                 />
                 <button
-                    className='bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded'
+                    className='bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4
+                    rounded disabled:bg-gray-400'
                     type='submit'
+                    disabled={isPending}
                 >
                     Add
                 </button>
@@ -51,28 +63,43 @@ export function AddUserForm({ refetchUsers } : { refetchUsers: () => void}) {
     );
 }
 
-export function UsersList({ usersPromise }: { usersPromise:Promise<User[]> }) {
+interface IUsersList {
+    usersPromise: Promise<User[]>;
+    refetchUsers: () => void;
+}
+
+export function UsersList({ usersPromise, refetchUsers }: IUsersList) {
     const users = use(usersPromise);
 
     return (
         <section className='flex flex-col gap-2'>
-            {users.map((user) => <UserCard key={user.id} user={user} />)}
+            {users.map((user) => <UserCard key={user.id} user={user} refetchUsers={refetchUsers}/>)}
         </section>
     );
 }
 
-export function UserCard({ user } : { user:User }) {
-    const deleteUserOnClick = (selectedUserId:string) => {
-        deleteUser(selectedUserId);
+interface IUserCard {
+    user: User;
+    refetchUsers: () => void;
+}
+
+export function UserCard({ user, refetchUsers }: IUserCard) {
+    const [isPending, startTransition] = useTransition();
+    const handleDelete = (selectedUserId: string) => {
+        startTransition(async () => {
+            await deleteUser(selectedUserId);
+            startTransition(() => refetchUsers());
+        });
     };
 
     return (
         <div className='flex items-center gap-2 border p-2 rounded bg-gray-100' key={user.id}>
             {user.email}
             <button
-                className='bg-red-500 hover:bg-red-700 font-bold py-2 px-4 rounded ml-auto'
+                className='bg-red-500 hover:bg-red-700 font-bold py-2 px-4 rounded ml-auto disabled:bg-gray-400'
                 type='button'
-                onClick={() => deleteUserOnClick(user.id)}
+                onClick={() => handleDelete(user.id)}
+                disabled={isPending}
             >
                 Delete
             </button>
