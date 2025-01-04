@@ -1,13 +1,4 @@
 {
   "tasks": [],
-  "users": [
-    {
-      "id": "04dabb27-9e1d-4fd4-b9e5-13597d8d4b66",
-      "email": ""
-    },
-    {
-      "id": "71a437e9-78ac-415e-8534-c99afcb06809",
-      "email": "admin@loool.com"
-    }
-  ]
+  "users": []
 }
