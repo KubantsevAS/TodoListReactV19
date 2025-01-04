@@ -38,7 +38,10 @@ export default tseslint.config(
             '@stylistic/js/object-curly-spacing': ['error', 'always'],
             '@stylistic/js/one-var-declaration-per-line': ['error', 'always'],
             '@stylistic/js/padded-blocks': ['error', 'never'],
-            '@stylistic/js/padding-line-between-statements': ['error', { blankLine: 'always', prev: '*', next: 'return' }],
+            '@stylistic/js/padding-line-between-statements': [
+                'error',
+                { blankLine: 'always', prev: '*', next: ['export', 'return', 'function'] }
+            ],
             '@stylistic/js/quotes': ['error', 'single'],
             '@stylistic/js/semi': 'error',
             '@stylistic/js/semi-spacing': 'error',
