@@ -4,6 +4,7 @@ import {
 import {
     createUser, deleteUser, fetchUsers, User,
 } from '../../shared/api';
+import { ErrorBoundary } from 'react-error-boundary';
 
 const defaultUsersPromise = fetchUsers();
 
@@ -15,9 +16,15 @@ export function UsersPage() {
         <main className='flex flex-col gap-4 container mx-auto p-4 pt-10'>
             <h1 className='text-3xl font-bold underline'>Users</h1>
             <AddUserForm refetchUsers={refetchUsers} />
-            <Suspense fallback={<div>Loading...</div>}>
-                <UsersList usersPromise={usersPromise} refetchUsers={refetchUsers} />
-            </Suspense>
+            <ErrorBoundary
+                fallbackRender={(error) => (
+                    <div className='text-red-500'>Something went wrong{JSON.stringify(error)}</div>
+                )}
+            >
+                <Suspense fallback={<div>Loading...</div>}>
+                    <UsersList usersPromise={usersPromise} refetchUsers={refetchUsers} />
+                </Suspense>
+            </ErrorBoundary>
         </main>
     );
 }
