@@ -45,7 +45,7 @@ export default tseslint.config(
             '@stylistic/ts/no-extra-semi': 'error',
             '@stylistic/ts/object-curly-newline': ['error', { 'multiline': true, 'minProperties': 4, 'consistent': true }],
             '@stylistic/ts/object-curly-spacing': ['error', 'always'],
-            '@stylistic/ts/object-property-newline': ['error', {'allowAllPropertiesOnSameLine': false}],
+            // '@stylistic/ts/object-property-newline': ['error', {'allowAllPropertiesOnSameLine': false}],
             '@stylistic/ts/padding-line-between-statements': [
                 'error',
                 { blankLine: 'always', prev: '*', next: ['export', 'return', 'function'] }

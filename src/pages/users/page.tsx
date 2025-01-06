@@ -1,10 +1,16 @@
 import {
-    Suspense, use, useState, useTransition,
+    use,
+    useActionState,
+    useState,
+    useTransition,
+    startTransition,
+    Suspense,
 } from 'react';
 import {
-    createUser, deleteUser, fetchUsers, User,
+    deleteUser, fetchUsers, User,
 } from '../../shared/api';
 import { ErrorBoundary } from 'react-error-boundary';
+import { createUserAction } from './actions';
 
 const defaultUsersPromise = fetchUsers();
 
@@ -31,19 +37,12 @@ export function UsersPage() {
 
 export function AddUserForm({ refetchUsers }: { refetchUsers: () => void }) {
     const [email, setEmail] = useState('');
-    const [isPending, startTransition] = useTransition();
+    const [state, dispatch, isPending] = useActionState(createUserAction({ refetchUsers, setEmail }), {});
 
     const handleSubmit = (event: React.FormEvent) => {
         event.preventDefault();
         startTransition(async () => {
-            await createUser({
-                email,
-                id: crypto.randomUUID(),
-            });
-            startTransition(() => {
-                refetchUsers();
-                setEmail('');
-            });
+            dispatch({ email });
         });
     };
 
@@ -65,6 +64,7 @@ export function AddUserForm({ refetchUsers }: { refetchUsers: () => void }) {
                 >
                     Add
                 </button>
+                {state.error && <div className='text-red-500'>{state.error}</div>}
             </form>
         </section>
     );
