@@ -1,4 +1,9 @@
-import { useActionState, Suspense } from 'react';
+import {
+    useActionState,
+    useOptimistic,
+    Suspense,
+    useRef,
+} from 'react';
 import { User } from '../../shared/api';
 import { ErrorBoundary } from 'react-error-boundary';
 import { CreateUserAction, DeleteUserAction } from './actions';
@@ -25,27 +30,31 @@ export function UsersPage() {
 }
 
 export function CreateUserForm({ createUserAction }: { createUserAction: CreateUserAction }) {
-    const [state, dispatch, isPending] = useActionState(createUserAction, { email: '' });
+    const [state, dispatch] = useActionState(createUserAction, { email: '' });
+    const [optimisticState, setOptimisticState] = useOptimistic(state);
+    const form = useRef<HTMLFormElement>(null);
 
     return (
         <section>
-            <form className='flex gap-2' action={dispatch}>
+            <form className='flex gap-2' ref={form} action={(formData: FormData) => {
+                form.current?.reset();
+                setOptimisticState({ email: '' });
+                dispatch(formData);
+            }}>
                 <input
                     className='border p-2 rounded'
                     name='email'
                     type='email'
-                    defaultValue={state.email}
-                    disabled={isPending}
+                    defaultValue={optimisticState.email}
                 />
                 <button
                     className='bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4
                     rounded disabled:bg-gray-400'
                     type='submit'
-                    disabled={isPending}
                 >
                     Add
                 </button>
-                {state.error && <div className='text-red-500'>{state.error}</div>}
+                {optimisticState.error && <div className='text-red-500'>{optimisticState.error}</div>}
             </form>
         </section>
     );
