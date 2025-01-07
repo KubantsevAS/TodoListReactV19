@@ -1,15 +1,23 @@
-import { createUser, deleteUser } from '../../shared/api';
+import { createUser, deleteUser, User } from '../../shared/api';
 
 type CreateUserActionState = {
     error?: string;
     email?: string;
 };
 
-export const createUserAction = ({ refetchUsers }: { refetchUsers: () => void }) => (
-    async (
-        _: CreateUserActionState,
-        formData: FormData,
-    ): Promise<CreateUserActionState> => {
+export type CreateUserAction = (
+    state: CreateUserActionState,
+    formData: FormData,
+) => Promise<CreateUserActionState>;
+
+export const createUserAction = ({
+    refetchUsers,
+    optimisticCreate,
+}: {
+    refetchUsers: () => void;
+    optimisticCreate: (user: User) => void;
+}): CreateUserAction => (
+    async (_, formData) => {
         const email = formData.get('email') as string;
 
         if (!email) {
@@ -21,11 +29,12 @@ export const createUserAction = ({ refetchUsers }: { refetchUsers: () => void })
         }
 
         try {
-            await createUser({
+            const user = {
                 email,
                 id: crypto.randomUUID(),
-            });
-
+            };
+            optimisticCreate(user);
+            await createUser(user);
             refetchUsers();
 
             return {};
@@ -40,17 +49,29 @@ type DeleteUserActionState = {
     selectedUserId?: string;
 };
 
-export const deleteUserAction =
-    ({ refetchUsers, selectedUserId }: { refetchUsers: () => void; selectedUserId: string }) => (
-        async (): Promise<DeleteUserActionState> => {
-            try {
-                await deleteUser(selectedUserId);
+export type DeleteUserAction = (
+    state: DeleteUserActionState,
+    formData: FormData,
+) => Promise<DeleteUserActionState>;
 
-                refetchUsers();
+export const deleteUserAction = ({
+    refetchUsers,
+    optimisticDelete,
+}: {
+    refetchUsers: () => void;
+    optimisticDelete: (id: string) => void;
+}): DeleteUserAction => (
+    async (_, formData) => {
+        const selectedUserId = formData.get('id') as string;
 
-                return {};
-            } catch {
-                return { error: 'Error while deleting user' };
-            }
+        try {
+            optimisticDelete(selectedUserId);
+            await deleteUser(selectedUserId);
+            refetchUsers();
+
+            return {};
+        } catch {
+            return { error: 'Error while deleting user' };
         }
-    );
+    }
+);

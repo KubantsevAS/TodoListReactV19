@@ -1,31 +1,31 @@
-import { use,useActionState,Suspense } from 'react';
+import { useActionState, Suspense } from 'react';
 import { User } from '../../shared/api';
 import { ErrorBoundary } from 'react-error-boundary';
-import { createUserAction, deleteUserAction } from './actions';
+import { CreateUserAction, DeleteUserAction } from './actions';
 import { useUsers } from './useUsers';
 
 export function UsersPage() {
-    const [usersPromise, refetchUsers] = useUsers();
+    const { useUsersList, createUserAction, deleteUserAction } = useUsers();
 
     return (
         <main className='flex flex-col gap-4 container mx-auto p-4 pt-10'>
             <h1 className='text-3xl font-bold underline'>Users</h1>
-            <CreateUserForm refetchUsers={refetchUsers}/>
+            <CreateUserForm createUserAction={createUserAction}/>
             <ErrorBoundary
                 fallbackRender={(error) => (
                     <div className='text-red-500'>Something went wrong{JSON.stringify(error)}</div>
                 )}
             >
                 <Suspense fallback={<div>Loading...</div>}>
-                    <UsersList usersPromise={usersPromise} refetchUsers={refetchUsers}/>
+                    <UsersList useUsersList={useUsersList} deleteUserAction={deleteUserAction}/>
                 </Suspense>
             </ErrorBoundary>
         </main>
     );
 }
 
-export function CreateUserForm({ refetchUsers }: { refetchUsers: () => void }) {
-    const [state, dispatch, isPending] = useActionState(createUserAction({ refetchUsers }), { email: '' });
+export function CreateUserForm({ createUserAction }: { createUserAction: CreateUserAction }) {
+    const [state, dispatch, isPending] = useActionState(createUserAction, { email: '' });
 
     return (
         <section>
@@ -51,33 +51,30 @@ export function CreateUserForm({ refetchUsers }: { refetchUsers: () => void }) {
     );
 }
 interface IUsersList {
-    usersPromise: Promise<User[]>;
-    refetchUsers: () => void;
+    useUsersList: () => User[];
+    deleteUserAction: DeleteUserAction;
 }
 
-export function UsersList({ usersPromise, refetchUsers }: IUsersList) {
-    const users = use(usersPromise);
+export function UsersList({ useUsersList, deleteUserAction }: IUsersList) {
+    const users = useUsersList();
 
     return (
         <section className='flex flex-col gap-2'>
-            {users.map((user) => <UserCard key={user.id} user={user} refetchUsers={refetchUsers} />)}
+            {users.map((user) => <UserCard key={user.id} user={user} deleteUserAction={deleteUserAction} />)}
         </section>
     );
 }
 
-interface IUserCard {
-    user: User;
-    refetchUsers: () => void;
-}
-
-export function UserCard({ user, refetchUsers }: IUserCard) {
-    const { id: selectedUserId, email } = user;
-    const [state, dispatch, isPending] = useActionState(deleteUserAction({ refetchUsers, selectedUserId }), {});
+export function UserCard(
+    { user, deleteUserAction }: { user: User; deleteUserAction: DeleteUserAction },
+) {
+    const [state, dispatch, isPending] = useActionState(deleteUserAction, {});
 
     return (
-        <div className='flex items-center gap-2 border p-2 rounded bg-gray-100' key={selectedUserId}>
-            {email}
+        <div className='flex items-center gap-2 border p-2 rounded bg-gray-100'>
+            {user.email}
             <form className='ml-auto' action={dispatch}>
+                <input type='hidden' name='id' value={user.id} />
                 <button
                     className='bg-red-500 hover:bg-red-700 font-bold py-2 px-4 rounded disabled:bg-gray-400'
                     disabled={isPending}
