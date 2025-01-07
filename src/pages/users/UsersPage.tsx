@@ -8,6 +8,7 @@ import { User } from '../../shared/api';
 import { ErrorBoundary } from 'react-error-boundary';
 import { CreateUserAction, DeleteUserAction } from './actions';
 import { useUsers } from './useUsers';
+import { Link } from 'react-router-dom';
 
 export function UsersPage() {
     const { useUsersList, createUserAction, deleteUserAction } = useUsers();
@@ -49,7 +50,7 @@ export function CreateUserForm({ createUserAction }: { createUserAction: CreateU
                 />
                 <button
                     className='bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4
-                    rounded disabled:bg-gray-400'
+                        rounded disabled:bg-gray-400'
                     type='submit'
                 >
                     Add
@@ -84,6 +85,13 @@ export function UserCard(
             {user.email}
             <form className='ml-auto' action={dispatch}>
                 <input type='hidden' name='id' value={user.id} />
+                <Link
+                    className='bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4
+                        rounded disabled:bg-gray-400'
+                    to={`/${user.id}/tasks`}
+                >
+                    Tasks
+                </Link>
                 <button
                     className='bg-red-500 hover:bg-red-700 font-bold py-2 px-4 rounded disabled:bg-gray-400'
                     disabled={isPending}
